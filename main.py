@@ -230,36 +230,40 @@ class TiffinServiceApp:
         item_frame.grid_columnconfigure(0, weight=1)
         cart_frame.grid_columnconfigure(0, weight=1)
 
+        # Customer Details Section
+        ttk.Label(item_frame, text="Customer Name:", style='Normal.TLabel').grid(row=0, column=0, pady=5)
+        customer_name_var = tk.StringVar()  # Variable to hold customer name
+        customer_name_entry = ttk.Entry(item_frame, textvariable=customer_name_var, width=30)
+        customer_name_entry.grid(row=0, column=1, pady=5)
+
+        ttk.Label(item_frame, text="Phone Number:", style='Normal.TLabel').grid(row=1, column=0, pady=5)
+        customer_phone_var = tk.StringVar()  # Variable to hold customer phone
+        customer_phone_entry = ttk.Entry(item_frame, textvariable=customer_phone_var, width=30)
+        customer_phone_entry.grid(row=1, column=1, pady=5)
+
+        ttk.Label(item_frame, text="Address:", style='Normal.TLabel').grid(row=2, column=0, pady=5)
+        customer_address_var = tk.StringVar()  # Variable to hold customer address
+        customer_address_entry = ttk.Entry(item_frame, textvariable=customer_address_var, width=30)
+        customer_address_entry.grid(row=2, column=1, pady=5)
+
         # Menu Items List with adjusted sizes
-        ttk.Label(item_frame, 
-                 text="Menu Items", 
-                 style='SubHeading.TLabel').grid(row=0, column=0, pady=20)
+        ttk.Label(item_frame, text="Menu Items", style='SubHeading.TLabel').grid(row=3, column=0, columnspan=2, pady=20)
         
-        menu_tree = ttk.Treeview(item_frame, 
-                                columns=('Item', 'Price'), 
-                                show='headings', 
-                                height=15,
-                                style='Treeview')
+        menu_tree = ttk.Treeview(item_frame, columns=('Item', 'Price'), show='headings', height=15, style='Treeview')
         menu_tree.heading('Item', text='Item')
         menu_tree.heading('Price', text='Price')
         menu_tree.column('Item', width=250)
         menu_tree.column('Price', width=100)
-        menu_tree.grid(row=1, column=0, pady=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        menu_tree.grid(row=4, column=0, columnspan=2, pady=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         # Add buttons frame for menu items
         item_buttons_frame = ttk.Frame(item_frame)
-        item_buttons_frame.grid(row=2, column=0, pady=10)
+        item_buttons_frame.grid(row=5, column=0, columnspan=2, pady=10)
 
         # Cart List with adjusted sizes
-        ttk.Label(cart_frame, 
-                 text="Selected Items", 
-                 style='SubHeading.TLabel').grid(row=0, column=0, pady=20)
+        ttk.Label(cart_frame, text="Selected Items", style='SubHeading.TLabel').grid(row=0, column=0, pady=20)
         
-        cart_tree = ttk.Treeview(cart_frame, 
-                                columns=('Item', 'Price'), 
-                                show='headings', 
-                                height=12,
-                                style='Treeview')
+        cart_tree = ttk.Treeview(cart_frame, columns=('Item', 'Price'), show='headings', height=12, style='Treeview')
         cart_tree.heading('Item', text='Item')
         cart_tree.heading('Price', text='Price')
         cart_tree.column('Item', width=250)
@@ -272,65 +276,39 @@ class TiffinServiceApp:
 
         # Total Price Label with larger font
         total_price = StringVar(value="Total: ₹0.00")
-        ttk.Label(cart_frame, 
-                 textvariable=total_price, 
-                 style='SubHeading.TLabel').grid(row=3, column=0, pady=20)
+        ttk.Label(cart_frame, textvariable=total_price, style='SubHeading.TLabel').grid(row=3, column=0, pady=20)
 
         # Add Order Type Frame
         order_type_frame = ttk.Frame(cart_frame)
         order_type_frame.grid(row=4, column=0, pady=10)
         
-        ttk.Label(order_type_frame, 
-                 text="Order Type:", 
-                 style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
+        ttk.Label(order_type_frame, text="Order Type:", style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
         
         order_type = tk.StringVar(value="Take Away")
-        take_away_radio = ttk.Radiobutton(order_type_frame, 
-                                         text="Take Away",
-                                         variable=order_type,
-                                         value="Take Away",
-                                         style='TRadiobutton')
+        take_away_radio = ttk.Radiobutton(order_type_frame, text="Take Away", variable=order_type, value="Take Away", style='TRadiobutton')
         take_away_radio.pack(side=tk.LEFT, padx=10)
         
-        delivery_radio = ttk.Radiobutton(order_type_frame, 
-                                        text="Delivery",
-                                        variable=order_type,
-                                        value="Delivery",
-                                        style='TRadiobutton')
+        delivery_radio = ttk.Radiobutton(order_type_frame, text="Delivery", variable=order_type, value="Delivery", style='TRadiobutton')
         delivery_radio.pack(side=tk.LEFT, padx=10)
 
         # Delivery Status Frame
         delivery_frame = ttk.Frame(cart_frame)
         delivery_frame.grid(row=5, column=0, pady=10)
         
-        ttk.Label(delivery_frame, 
-                 text="Delivery Status:", 
-                 style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
+        ttk.Label(delivery_frame, text="Delivery Status:", style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
         
         delivery_status = tk.StringVar(value="Pending")
-        delivery_combo = ttk.Combobox(delivery_frame, 
-                                    textvariable=delivery_status,
-                                    values=["Pending", "Delivered"],
-                                    style='TCombobox',
-                                    state="readonly",
-                                    width=12)
+        delivery_combo = ttk.Combobox(delivery_frame, textvariable=delivery_status, values=["Pending", "Delivered"], style='TCombobox', state="readonly", width=12)
         delivery_combo.pack(side=tk.LEFT, padx=10)
 
-        # Payment Status Frame (moved to after delivery frame)
+        # Payment Status Frame
         payment_frame = ttk.Frame(cart_frame)
         payment_frame.grid(row=6, column=0, pady=10)
         
-        ttk.Label(payment_frame, 
-                 text="Payment Status:", 
-                 style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
+        ttk.Label(payment_frame, text="Payment Status:", style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
         
         payment_status = tk.StringVar(value="Not Paid")
-        payment_combo = ttk.Combobox(payment_frame, 
-                                   textvariable=payment_status,
-                                   values=["Paid", "Not Paid"],
-                                   style='TCombobox',
-                                   state="readonly",
-                                   width=12)
+        payment_combo = ttk.Combobox(payment_frame, textvariable=payment_status, values=["Paid", "Not Paid"], style='TCombobox', state="readonly", width=12)
         payment_combo.pack(side=tk.LEFT, padx=10)
 
         def add_to_cart():
@@ -342,8 +320,7 @@ class TiffinServiceApp:
             cart_tree.insert('', 'end', values=item)
             
             # Update total price
-            total = sum(float(cart_tree.item(item)['values'][1].replace('₹', '')) 
-                       for item in cart_tree.get_children())
+            total = sum(float(cart_tree.item(item)['values'][1].replace('₹', '')) for item in cart_tree.get_children())
             total_price.set(f"Total: ₹{total:.2f}")
 
         def remove_from_cart():
@@ -354,8 +331,7 @@ class TiffinServiceApp:
             cart_tree.delete(selection[0])
             
             # Update total price
-            total = sum(float(cart_tree.item(item)['values'][1].replace('₹', '')) 
-                       for item in cart_tree.get_children())
+            total = sum(float(cart_tree.item(item)['values'][1].replace('₹', '')) for item in cart_tree.get_children())
             total_price.set(f"Total: ₹{total:.2f}")
 
         def place_order():
@@ -385,40 +361,39 @@ class TiffinServiceApp:
                 'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'payment_status': payment_status.get(),
                 'order_type': order_type.get(),
-                'delivery_status': delivery_status.get()
+                'delivery_status': delivery_status.get(),
+                'customer_name': customer_name_var.get(),
+                'customer_phone': customer_phone_var.get(),
+                'customer_address': customer_address_var.get()
             }
-            self.order_history.append(order)
+            self.order_history.append(order)  # Add order to history
+            print(f"Order added: {order}")  # Debugging output
             
             # Save to Excel file
             self.save_order_history()
             
+            # Save customer details to customer database
+            self.save_customer_details(order['customer_name'], order['customer_phone'], order['customer_address'])
+
+            # Show success message and close the order window
             messagebox.showinfo("Success", 
                               f"Order placed successfully!\n"
                               f"Order ID: {order_id}\n"
                               f"Order Type: {order_type.get()}\n"
                               f"Delivery Status: {delivery_status.get()}\n"
                               f"Total Amount: ₹{total:.2f}\n"
-                              f"Payment Status: {payment_status.get()}")
-            order_window.destroy()
+                              f"Payment Status: {payment_status.get()}\n"
+                              f"Customer Name: {order['customer_name']}\n"
+                              f"Customer Phone: {order['customer_phone']}\n"
+                              f"Customer Address: {order['customer_address']}")
+            order_window.destroy()  # Close the order window
 
         # Add buttons
-        ttk.Button(item_buttons_frame, 
-                  text="Add to Cart", 
-                  style='Big.TButton',
-                  width=20,  # Adjusted width
-                  command=add_to_cart).pack(pady=5)
+        ttk.Button(item_buttons_frame, text="Add to Cart", style='Big.TButton', width=20, command=add_to_cart).pack(pady=5)
         
-        ttk.Button(cart_buttons_frame, 
-                  text="Remove Item", 
-                  style='Big.TButton',
-                  width=20,
-                  command=remove_from_cart).pack(pady=5)
+        ttk.Button(cart_buttons_frame, text="Remove Item", style='Big.TButton', width=20, command=remove_from_cart).pack(pady=5)
         
-        ttk.Button(cart_buttons_frame, 
-                  text="Place Order", 
-                  style='Big.TButton',
-                  width=20,
-                  command=place_order).pack(pady=5)
+        ttk.Button(cart_buttons_frame, text="Place Order", style='Big.TButton', width=20, command=place_order).pack(pady=5)
 
         # Populate menu items
         for item in self.menu_items:
@@ -932,6 +907,33 @@ class TiffinServiceApp:
         menu_window.geometry(f"{screen_width}x{screen_height}+0+0")
         
         messagebox.showinfo("Menu Items", "Menu management will be implemented here")
+
+    def save_customer_details(self, name, phone, address):
+        try:
+            # Load existing customers or create a new list
+            if os.path.exists('customer_database.xlsx'):
+                df = pd.read_excel('customer_database.xlsx')
+                customers = df.to_dict(orient='records')
+            else:
+                customers = []
+
+            # Create a new customer entry
+            customer_id = datetime.now().strftime("%Y%m%d%H%M%S")  # Unique ID
+            new_customer = {
+                'Customer ID': customer_id,
+                'Name': name,
+                'Phone': phone,
+                'Address': address
+            }
+            customers.append(new_customer)
+
+            # Save back to Excel
+            df = pd.DataFrame(customers)
+            df.to_excel('customer_database.xlsx', index=False)
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", f"Error saving customer details: {str(e)}")
+            return False
 
 if __name__ == "__main__":
     root = tk.Tk()
