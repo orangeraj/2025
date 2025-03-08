@@ -13,3 +13,6 @@ highlights of the application:
 Menu items can be decided as per need with pricing
 You get separate backup to keep your important customers
 Order history lets you analyse daily volume of orders.
+
+if you want to use app on your system
+just download dist/main.exe and start using
