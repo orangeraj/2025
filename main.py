@@ -25,13 +25,13 @@ class TiffinServiceApp:
         self.history_file = "order_history.xlsx"
         
         # Static menu items list instead of Excel
-        self.menu_items = [
-            {"Item Name": "Dal Rice", "Price": 120},
-            {"Item Name": "Veg Thali", "Price": 150},
-            {"Item Name": "Roti Sabzi", "Price": 100},
-            {"Item Name": "Paneer Special", "Price": 180},
-            {"Item Name": "South Indian Thali", "Price": 200}
-        ]
+        #self.menu_items = [
+        #    {"Item Name": "Dal Rice", "Price": 120},
+        #    {"Item Name": "Veg Thali", "Price": 150},
+        #    {"Item Name": "Roti Sabzi", "Price": 100},
+        #    {"Item Name": "Paneer Special", "Price": 180},
+        #    {"Item Name": "South Indian Thali", "Price": 200}
+        #]
         
         # Initialize order items and load order history
         self.order_items = []
@@ -85,6 +85,24 @@ class TiffinServiceApp:
     def load_order_history(self):
         try:
             orders = []
+            # Check if MenuToday.xlsx exists, if not, create it with default structure and sample items
+            if not os.path.exists('MenuToday.xlsx'):
+                # Create a DataFrame with default columns and sample data
+                sample_data = {
+                    'Item Name': ['Dal Rice', 'Veg Thali', 'Roti Sabzi', 'Paneer Special', 'South Indian Thali'],
+                    'Price': [120, 150, 100, 180, 200]
+                }
+                default_data = pd.DataFrame(sample_data)
+                default_data.to_excel('MenuToday.xlsx', index=False)
+
+            # Load items from MenuToday.xlsx
+            items_df = pd.read_excel('MenuToday.xlsx')  # Load the items from the specified file
+            items_list = items_df.to_dict(orient='records')  # Convert to a list of dictionaries
+            
+            # Assuming the items_df has columns 'Item Name' and 'Price'
+            self.menu_items = [{'Item Name': item['Item Name'], 'Price': item['Price']} for item in items_list]
+
+            # Load order history from existing order history files
             files = [f for f in os.listdir() if f.startswith('order_history_') and f.endswith('.xlsx')]
             
             for file in files:
@@ -111,7 +129,6 @@ class TiffinServiceApp:
                 
         except Exception as e:
             messagebox.showerror("Error", f"Error loading order history: {str(e)}")
-            return []
     
     def save_order_history(self):
         try:
@@ -179,7 +196,7 @@ class TiffinServiceApp:
         
         # Title Label with new style
         title_label = ttk.Label(self.welcome_frame, 
-                               text="Welcome to Tiffin Service Management System",
+                               text="||  AkshayPatra Tiffin Service  ||",
                                style='Heading.TLabel')
         title_label.pack(pady=40)
         
