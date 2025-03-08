@@ -100,7 +100,8 @@ class TiffinServiceApp:
                                 'total': float(row['Total']),
                                 'payment_status': str(row.get('Payment Status', 'Not Paid')),
                                 'order_type': str(row.get('Order Type', 'Take Away')),
-                                'delivery_status': str(row.get('Delivery Status', 'Pending'))
+                                'delivery_status': str(row.get('Delivery Status', 'Pending')),
+                                'customer_name': str(row.get('Customer Name', ''))
                             }
                             orders.append(order)
                         except Exception as e:
@@ -132,7 +133,8 @@ class TiffinServiceApp:
                             'Total': order['total'],
                             'Payment Status': order.get('payment_status', 'Not Paid'),
                             'Order Type': order.get('order_type', 'Take Away'),
-                            'Delivery Status': order.get('delivery_status', 'Pending')
+                            'Delivery Status': order.get('delivery_status', 'Pending'),
+                            'Customer Name': order.get('customer_name', '')
                         })
                 
                 # Save to Excel if we have orders
@@ -335,10 +337,6 @@ class TiffinServiceApp:
             total_price.set(f"Total: ₹{total:.2f}")
 
         def place_order():
-            if not cart_tree.get_children():
-                messagebox.showwarning("Warning", "Please add items to cart!")
-                return
-            
             # Collect items from cart
             ordered_items = []
             total = 0
@@ -349,10 +347,14 @@ class TiffinServiceApp:
                     'Price': float(item[1].replace('₹', ''))
                 })
                 total += float(item[1].replace('₹', ''))
-            
+
+            if not cart_tree.get_children():
+                messagebox.showwarning("Warning", "Please add items to cart!")
+                return  # Stay on the order page
+
             # Generate unique order ID using timestamp
             order_id = datetime.now().strftime("%Y%m%d%H%M%S")
-            
+
             # Add to order history
             order = {
                 'order_id': order_id,
@@ -362,31 +364,31 @@ class TiffinServiceApp:
                 'payment_status': payment_status.get(),
                 'order_type': order_type.get(),
                 'delivery_status': delivery_status.get(),
-                'customer_name': customer_name_var.get(),
-                'customer_phone': customer_phone_var.get(),
-                'customer_address': customer_address_var.get()
+                'customer_name': customer_name_var.get() or "N/A",  # Use "N/A" if name is empty
+                'customer_phone': customer_phone_var.get() or "N/A",  # Use "N/A" if phone is empty
+                'customer_address': customer_address_var.get() or "N/A"  # Use "N/A" if address is empty
             }
             self.order_history.append(order)  # Add order to history
             print(f"Order added: {order}")  # Debugging output
-            
-            # Save to Excel file
-            self.save_order_history()
-            
-            # Save customer details to customer database
-            self.save_customer_details(order['customer_name'], order['customer_phone'], order['customer_address'])
 
-            # Show success message and close the order window
+            # Save to Excel file
+            if not self.save_order_history():
+                messagebox.showerror("Error", "Failed to save order history. Please try again.")
+                return  # Stay on the order page
+
+            # Show success message
             messagebox.showinfo("Success", 
-                              f"Order placed successfully!\n"
-                              f"Order ID: {order_id}\n"
-                              f"Order Type: {order_type.get()}\n"
-                              f"Delivery Status: {delivery_status.get()}\n"
-                              f"Total Amount: ₹{total:.2f}\n"
-                              f"Payment Status: {payment_status.get()}\n"
-                              f"Customer Name: {order['customer_name']}\n"
-                              f"Customer Phone: {order['customer_phone']}\n"
-                              f"Customer Address: {order['customer_address']}")
-            order_window.destroy()  # Close the order window
+                                f"Order placed successfully!\n"
+                                f"Order ID: {order_id}\n"
+                                f"Order Type: {order_type.get()}\n"
+                                f"Delivery Status: {delivery_status.get()}\n"
+                                f"Total Amount: ₹{total:.2f}\n"
+                                f"Payment Status: {payment_status.get()}\n"
+                                f"Customer Name: {order['customer_name']}\n"
+                                f"Customer Phone: {order['customer_phone']}\n"
+                                f"Customer Address: {order['customer_address']}")
+
+            order_window.destroy()  # Close the order window after showing the success message
 
         # Add buttons
         ttk.Button(item_buttons_frame, text="Add to Cart", style='Big.TButton', width=20, command=add_to_cart).pack(pady=5)
@@ -394,6 +396,9 @@ class TiffinServiceApp:
         ttk.Button(cart_buttons_frame, text="Remove Item", style='Big.TButton', width=20, command=remove_from_cart).pack(pady=5)
         
         ttk.Button(cart_buttons_frame, text="Place Order", style='Big.TButton', width=20, command=place_order).pack(pady=5)
+
+        # Close button
+        ttk.Button(item_buttons_frame, text="Close", style='Big.TButton', width=20, command=order_window.destroy).pack(side=tk.RIGHT, padx=5)
 
         # Populate menu items
         for item in self.menu_items:
@@ -426,7 +431,7 @@ class TiffinServiceApp:
         
         # Create Treeview and configure it
         tree = ttk.Treeview(frame, 
-                            columns=('Order ID', 'Date', 'Items', 'Total', 'Payment', 'Order Type', 'Delivery Status'),
+                            columns=('Order ID', 'Date', 'Items', 'Total', 'Payment', 'Order Type', 'Delivery Status', 'Customer Name'),
                             show='headings',
                             height=18,
                             style='Treeview')
@@ -438,6 +443,7 @@ class TiffinServiceApp:
         tree.heading('Payment', text='Payment Status')
         tree.heading('Order Type', text='Order Type')
         tree.heading('Delivery Status', text='Delivery Status')
+        tree.heading('Customer Name', text='Customer Name')
         
         # Adjusted column widths to ensure text is fully visible
         tree.column('Order ID', width=120, minwidth=120)
@@ -447,6 +453,7 @@ class TiffinServiceApp:
         tree.column('Payment', width=120, minwidth=120)
         tree.column('Order Type', width=120, minwidth=120)
         tree.column('Delivery Status', width=120, minwidth=120)
+        tree.column('Customer Name', width=200, minwidth=200)
         
         tree.grid(row=1, column=0, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
 
@@ -627,7 +634,8 @@ class TiffinServiceApp:
                             f"₹{float(order['total']):.2f}",
                             payment_status,
                             order_type,
-                            delivery_status
+                            delivery_status,
+                            order.get('customer_name', '')
                         ))
                         
                         # Apply tags for visual status
