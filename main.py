@@ -205,8 +205,225 @@ class TiffinServiceApp:
                   command=self.show_customers).pack(pady=20)
     
     def new_order(self):
-        # Create new window
-        pass
+        # Create new window for order
+        order_window = Toplevel(self.root)
+        order_window.title("New Order")
+        
+        # Make order window full screen
+        screen_width = order_window.winfo_screenwidth()
+        screen_height = order_window.winfo_screenheight()
+        order_window.geometry(f"{screen_width}x{screen_height}+0+0")
+
+        # Configure grid weights for order window
+        order_window.grid_columnconfigure(0, weight=1)
+        order_window.grid_columnconfigure(1, weight=1)
+        order_window.grid_rowconfigure(0, weight=1)
+
+        # Create frames
+        item_frame = ttk.Frame(order_window, padding="20")
+        item_frame.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W), padx=20)
+        
+        cart_frame = ttk.Frame(order_window, padding="20")
+        cart_frame.grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W), padx=20)
+
+        # Configure grid weights for frames
+        item_frame.grid_columnconfigure(0, weight=1)
+        cart_frame.grid_columnconfigure(0, weight=1)
+
+        # Menu Items List with adjusted sizes
+        ttk.Label(item_frame, 
+                 text="Menu Items", 
+                 style='SubHeading.TLabel').grid(row=0, column=0, pady=20)
+        
+        menu_tree = ttk.Treeview(item_frame, 
+                                columns=('Item', 'Price'), 
+                                show='headings', 
+                                height=15,
+                                style='Treeview')
+        menu_tree.heading('Item', text='Item')
+        menu_tree.heading('Price', text='Price')
+        menu_tree.column('Item', width=250)
+        menu_tree.column('Price', width=100)
+        menu_tree.grid(row=1, column=0, pady=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        # Add buttons frame for menu items
+        item_buttons_frame = ttk.Frame(item_frame)
+        item_buttons_frame.grid(row=2, column=0, pady=10)
+
+        # Cart List with adjusted sizes
+        ttk.Label(cart_frame, 
+                 text="Selected Items", 
+                 style='SubHeading.TLabel').grid(row=0, column=0, pady=20)
+        
+        cart_tree = ttk.Treeview(cart_frame, 
+                                columns=('Item', 'Price'), 
+                                show='headings', 
+                                height=12,
+                                style='Treeview')
+        cart_tree.heading('Item', text='Item')
+        cart_tree.heading('Price', text='Price')
+        cart_tree.column('Item', width=250)
+        cart_tree.column('Price', width=100)
+        cart_tree.grid(row=1, column=0, pady=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        # Add buttons frame for cart
+        cart_buttons_frame = ttk.Frame(cart_frame)
+        cart_buttons_frame.grid(row=2, column=0, pady=10)
+
+        # Total Price Label with larger font
+        total_price = StringVar(value="Total: ₹0.00")
+        ttk.Label(cart_frame, 
+                 textvariable=total_price, 
+                 style='SubHeading.TLabel').grid(row=3, column=0, pady=20)
+
+        # Add Order Type Frame
+        order_type_frame = ttk.Frame(cart_frame)
+        order_type_frame.grid(row=4, column=0, pady=10)
+        
+        ttk.Label(order_type_frame, 
+                 text="Order Type:", 
+                 style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
+        
+        order_type = tk.StringVar(value="Take Away")
+        take_away_radio = ttk.Radiobutton(order_type_frame, 
+                                         text="Take Away",
+                                         variable=order_type,
+                                         value="Take Away",
+                                         style='TRadiobutton')
+        take_away_radio.pack(side=tk.LEFT, padx=10)
+        
+        delivery_radio = ttk.Radiobutton(order_type_frame, 
+                                        text="Delivery",
+                                        variable=order_type,
+                                        value="Delivery",
+                                        style='TRadiobutton')
+        delivery_radio.pack(side=tk.LEFT, padx=10)
+
+        # Delivery Status Frame
+        delivery_frame = ttk.Frame(cart_frame)
+        delivery_frame.grid(row=5, column=0, pady=10)
+        
+        ttk.Label(delivery_frame, 
+                 text="Delivery Status:", 
+                 style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
+        
+        delivery_status = tk.StringVar(value="Pending")
+        delivery_combo = ttk.Combobox(delivery_frame, 
+                                    textvariable=delivery_status,
+                                    values=["Pending", "Delivered"],
+                                    style='TCombobox',
+                                    state="readonly",
+                                    width=12)
+        delivery_combo.pack(side=tk.LEFT, padx=10)
+
+        # Payment Status Frame (moved to after delivery frame)
+        payment_frame = ttk.Frame(cart_frame)
+        payment_frame.grid(row=6, column=0, pady=10)
+        
+        ttk.Label(payment_frame, 
+                 text="Payment Status:", 
+                 style='Normal.TLabel').pack(side=tk.LEFT, padx=10)
+        
+        payment_status = tk.StringVar(value="Not Paid")
+        payment_combo = ttk.Combobox(payment_frame, 
+                                   textvariable=payment_status,
+                                   values=["Paid", "Not Paid"],
+                                   style='TCombobox',
+                                   state="readonly",
+                                   width=12)
+        payment_combo.pack(side=tk.LEFT, padx=10)
+
+        def add_to_cart():
+            selection = menu_tree.selection()
+            if not selection:
+                return
+            
+            item = menu_tree.item(selection[0])['values']
+            cart_tree.insert('', 'end', values=item)
+            
+            # Update total price
+            total = sum(float(cart_tree.item(item)['values'][1].replace('₹', '')) 
+                       for item in cart_tree.get_children())
+            total_price.set(f"Total: ₹{total:.2f}")
+
+        def remove_from_cart():
+            selection = cart_tree.selection()
+            if not selection:
+                return
+            
+            cart_tree.delete(selection[0])
+            
+            # Update total price
+            total = sum(float(cart_tree.item(item)['values'][1].replace('₹', '')) 
+                       for item in cart_tree.get_children())
+            total_price.set(f"Total: ₹{total:.2f}")
+
+        def place_order():
+            if not cart_tree.get_children():
+                messagebox.showwarning("Warning", "Please add items to cart!")
+                return
+            
+            # Collect items from cart
+            ordered_items = []
+            total = 0
+            for item_id in cart_tree.get_children():
+                item = cart_tree.item(item_id)['values']
+                ordered_items.append({
+                    'Item Name': item[0],
+                    'Price': float(item[1].replace('₹', ''))
+                })
+                total += float(item[1].replace('₹', ''))
+            
+            # Generate unique order ID using timestamp
+            order_id = datetime.now().strftime("%Y%m%d%H%M%S")
+            
+            # Add to order history
+            order = {
+                'order_id': order_id,
+                'items': ordered_items,
+                'total': total,
+                'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'payment_status': payment_status.get(),
+                'order_type': order_type.get(),
+                'delivery_status': delivery_status.get()
+            }
+            self.order_history.append(order)
+            
+            # Save to Excel file
+            self.save_order_history()
+            
+            messagebox.showinfo("Success", 
+                              f"Order placed successfully!\n"
+                              f"Order ID: {order_id}\n"
+                              f"Order Type: {order_type.get()}\n"
+                              f"Delivery Status: {delivery_status.get()}\n"
+                              f"Total Amount: ₹{total:.2f}\n"
+                              f"Payment Status: {payment_status.get()}")
+            order_window.destroy()
+
+        # Add buttons
+        ttk.Button(item_buttons_frame, 
+                  text="Add to Cart", 
+                  style='Big.TButton',
+                  width=20,  # Adjusted width
+                  command=add_to_cart).pack(pady=5)
+        
+        ttk.Button(cart_buttons_frame, 
+                  text="Remove Item", 
+                  style='Big.TButton',
+                  width=20,
+                  command=remove_from_cart).pack(pady=5)
+        
+        ttk.Button(cart_buttons_frame, 
+                  text="Place Order", 
+                  style='Big.TButton',
+                  width=20,
+                  command=place_order).pack(pady=5)
+
+        # Populate menu items
+        for item in self.menu_items:
+            menu_tree.insert('', 'end', values=(item['Item Name'], f"₹{item['Price']}"))
+    
     def show_orders(self):
         # Create new window for order history
         history_window = Toplevel(self.root)
