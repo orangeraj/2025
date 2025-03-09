@@ -196,7 +196,7 @@ class TiffinServiceApp:
         
         # Title Label with new style
         title_label = ttk.Label(self.welcome_frame, 
-                               text="||  AkshayPatra Tiffin Service  ||",
+                               text="||  अक्षयपात्र  ||",
                                style='Heading.TLabel')
         title_label.pack(pady=40)
         
@@ -465,7 +465,7 @@ class TiffinServiceApp:
         # Adjusted column widths to ensure text is fully visible
         tree.column('Order ID', width=120, minwidth=120)
         tree.column('Date', width=150, minwidth=150)
-        tree.column('Items', width=300, minwidth=250)
+        tree.column('Items', width=730, minwidth=250)
         tree.column('Total', width=100, minwidth=100)
         tree.column('Payment', width=120, minwidth=120)
         tree.column('Order Type', width=120, minwidth=120)
@@ -607,6 +607,20 @@ class TiffinServiceApp:
                                     width=15)
         payment_combo.pack(side=tk.LEFT, padx=20)
 
+        # Order Type filter
+        ttk.Label(filter_frame, 
+                 text="Order Type:", 
+                 style='Normal.TLabel').pack(side=tk.LEFT, padx=5)
+        
+        order_type_var = tk.StringVar(value="All")
+        order_type_combo = ttk.Combobox(filter_frame, 
+                                    textvariable=order_type_var,
+                                    values=["All", "Take Away", "Delivery"],
+                                    style='TCombobox',
+                                    state="readonly",
+                                    width=15)
+        order_type_combo.pack(side=tk.LEFT, padx=20)
+
         def update_orders(*args):
             # Clear current items
             for item in tree.get_children():
@@ -615,6 +629,7 @@ class TiffinServiceApp:
             selected_date = date_var.get()
             view_type = view_var.get()
             payment_filter = payment_var.get()
+            order_type_filter = order_type_var.get()
             
             # Reload order history to get latest data
             self.order_history = self.load_order_history()
@@ -633,6 +648,10 @@ class TiffinServiceApp:
                         # Skip based on payment filter
                         payment_status = order.get('payment_status', 'Not Paid')
                         if payment_filter != "All" and payment_status != payment_filter:
+                            continue
+                        
+                         # Skip based on order type filter
+                        if order_type_filter != "All" and order.get('order_type', 'Take Away') != order_type_filter:
                             continue
 
                         orders_found += 1
@@ -674,6 +693,8 @@ class TiffinServiceApp:
                     message += f" with payment status '{payment_filter}'"
                 if view_type == "Pending Deliveries":
                     message += " and pending delivery"
+                if order_type_filter != "All":
+                    message += f" of type '{order_type_filter}'"
                 message += "."
                 messagebox.showinfo("Orders", message, parent=history_window)
 
@@ -681,6 +702,7 @@ class TiffinServiceApp:
         date_combo.bind('<<ComboboxSelected>>', update_orders)
         view_combo.bind('<<ComboboxSelected>>', update_orders)
         payment_combo.bind('<<ComboboxSelected>>', update_orders)
+        order_type_combo.bind('<<ComboboxSelected>>', update_orders)  # Bind order type filter
 
         # Call update_orders directly after window creation
         update_orders()
